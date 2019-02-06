@@ -1,10 +1,10 @@
 import React from 'react'
+import Moment, { moment } from 'moment'
 
 const Time = () => {
 
   const dateNow = () => {
-    const d = new Date()
-    return `${d.getDate()} ${d.getMonth()}++ ${d.getFullYear()}`
+    return new Moment().format("MMM D YYYY")
   }
 
   return (
