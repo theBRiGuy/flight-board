@@ -1,15 +1,32 @@
-import React from 'react'
+import React, { Component } from 'react'
 import Moment, { moment } from 'moment'
 
-const Time = () => {
+class Time extends Component {
 
-  const dateNow = () => {
-    return new Moment().format("MMM D YYYY")
+  constructor(props) {
+    super(props)
+    this.state = {
+      curTime: this.timeFactory()
+    }
   }
 
-  return (
-    <div className="Time">{ dateNow() }</div>
-  )
+  render() {
+    return (
+      <div className="Time">{this.state.curTime}</div>
+    )
+  }
+
+  componentDidMount() {
+    setInterval(() => {
+      this.setState({
+        curTime: this.timeFactory()
+      })
+    }, 1000)
+  }
+
+  timeFactory() {
+    return new Moment().format('MMM D YYYY HH:mm:ss')
+  }
 }
 
 export default Time
