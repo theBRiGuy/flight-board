@@ -5,7 +5,7 @@ class FlightTable extends Component {
   getFlights() {
    return (
      <tr>
-       <td colspan="4">
+       <td colSpan="4">
         Flights here
        </td>
      </tr>

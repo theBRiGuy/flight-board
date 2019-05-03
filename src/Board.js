@@ -5,6 +5,20 @@ import FlightTable from './FlightTable'
 
 class Board extends Component {
 
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			flights: []
+		}
+
+		this.handleUpdateFlights = this.handleUpdateFlights.bind(this)
+	}
+
+	handleUpdateFlights() {
+
+	}
+
 	render() {
 		return (
 			<div className="Board">
@@ -15,7 +29,9 @@ class Board extends Component {
 					</div>
 				</div>
 				<div className="Board__body">
-					<FlightTable />
+					<FlightTable
+						onHandleUpdateFlights={this.handleUpdateFlights}
+					/>
 				</div>
 			</div>
 		)
