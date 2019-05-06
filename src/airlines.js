@@ -1,4 +1,4 @@
-airlines: {
+const airlines = {
 	AA: {
 		name: "American"
 	},
@@ -39,3 +39,5 @@ airlines: {
 		name: "WestJet"
 	}
 }
+
+export default airlines

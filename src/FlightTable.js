@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import airlines from './airlines'
 
 class FlightTable extends Component {
 
@@ -10,6 +11,10 @@ class FlightTable extends Component {
        </td>
      </tr>
    ) 
+  }
+
+  componentDidMount() {
+    console.log(airlines)
   }
 
   render() {
