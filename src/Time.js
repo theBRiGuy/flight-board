@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import Moment, { moment } from 'moment'
+import { format } from 'date-fns'
 
 class Time extends Component {
 
@@ -25,7 +25,7 @@ class Time extends Component {
   }
 
   timeFactory() {
-    return new Moment().format('MMM D YYYY HH:mm:ss')
+    return format(new Date(), 'MMM D YYYY HH:mm:ss')
   }
 }
 
