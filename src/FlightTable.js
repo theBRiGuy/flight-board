@@ -6,23 +6,30 @@ import arrivals from './arrivals'
 
 class FlightTable extends Component {
 
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      flights: []
+    }
+  }
+
   getFlights() {
 
     const now = new Date()
-    const flights = []
 
     arrivals.forEach(flight => {
       console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`);
 
-      const arrTimeArr = flight['arr_time'].split(':')
       const newDateWithScheduledFlightTime = (date) => {
-        date.setMinutes(arrTimeArr[1])
+        const arrTimeArr = flight['arr_time'].split(':')
         date.setHours(arrTimeArr[0])
+        date.setMinutes(arrTimeArr[1])
         date.setSeconds(0)
         return date
       }
 
-      let findDisplayableFlight = () => {
+      let displayableFlightDate = () => {
         const currentWeekday = getISODay(now)
         const prevWeekday = ((c = getISODay(now)) => (c === 1 ? 7 : c - 1))()
         const nextWeekday = ((c = getISODay(now)) => (c === 7 ? 1 : c + 1))()
@@ -60,15 +67,31 @@ class FlightTable extends Component {
         return candidates.find(candidate => Math.abs(differenceInMinutes(candidate, now)) <= 240)
       }
 
-      const displayableFlight = findDisplayableFlight()
-      if (displayableFlight) flights.push(displayableFlight)
-      console.log('flights is', flights)
+      const displayableFlight = displayableFlightDate()
+      if (displayableFlight) {
+        const { id, orig_pretty, status } = flight
+        this.state.flights.push(
+          Object.assign(
+            {id, orig_pretty, status}, 
+            {
+              time: `${('0' + displayableFlight.getHours()).slice(-2)}:${displayableFlight.getMinutes()}`,
+              status: (() => {
+                if (differenceInMinutes(displayableFlight, now) <= 0) return 'Departed'
+                else return 'On time'
+              })()
+            }
+          )
+        )
+
+        console.log('flights is', this.state.flights)
+        
+      }
     })
 
     return (
       <tbody>
-      {flights.map((flight, idx) => (
-        <Flight key={idx} time={flight.toString()} />
+      {this.state.flights.map((flight, idx) => (
+        <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} />
       ))}
       </tbody>
     ) 

@@ -6,7 +6,7 @@ class Flight extends Component {
     return(
       <tr>
         <td className="id">{this.props.id}</td>
-        <td className="origin">{this.props.origin}</td>
+        <td className="origin">{this.props.orig_pretty}</td>
         <td className="time">{this.props.time}</td>
         <td className="status">{this.props.status}</td>
         <td className="gate">{this.props.gate}</td>
