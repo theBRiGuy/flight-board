@@ -1,4 +1,9 @@
 import React, { Component } from 'react'
+import Table from '@material-ui/core/Table'
+import TableHead from '@material-ui/core/TableHead'
+import TableBody from '@material-ui/core/TableBody'
+import TableRow from '@material-ui/core/TableRow'
+import TableCell from '@material-ui/core/TableCell'
 import Flight from './Flight'
 import { getISODay, startOfTomorrow, startOfYesterday, differenceInMinutes } from 'date-fns'
 import arrivals from './arrivals'
@@ -8,6 +13,7 @@ class FlightTable extends Component {
 
   constructor (props) {
     super(props)
+    this.gates = {}
     this.state = {}
   }
 
@@ -83,13 +89,13 @@ class FlightTable extends Component {
     }
     else {
       return (
-        <tbody>
+        <TableBody>
           {
             this.flights.map((flight, idx) => (
               <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} gate={flight.gate} />
             ))
           }
-        </tbody>
+        </TableBody>
       )
     }
   }
@@ -124,11 +130,11 @@ class FlightTable extends Component {
 
   noFlights() {
     return (
-      <tbody>
-        <tr>
-          <td colSpan="4">No flights to display</td>
-        </tr>
-      </tbody>
+      <TableBody>
+        <TableRow>
+          <TableCell colSpan="4">No flights to display</TableCell>
+        </TableRow>
+      </TableBody>
     )
   }
 
@@ -144,20 +150,20 @@ class FlightTable extends Component {
 
   render() {
     return(
-      <table>
-        <thead>
-          <tr>
-            <th>Flight</th>
-            <th>Origin</th>
-            <th>Scheduled Time</th>
-            <th>Status</th>
-            <th>Gate</th>
-          </tr>
-        </thead>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Flight</TableCell>
+            <TableCell>Origin</TableCell>
+            <TableCell>Scheduled Time</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Gate</TableCell>
+          </TableRow>
+        </TableHead>
           {
             this.getFlights()
           }
-      </table>
+      </Table>
     )
   }
 }
