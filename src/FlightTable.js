@@ -8,15 +8,12 @@ class FlightTable extends Component {
 
   constructor (props) {
     super(props)
-
-    this.state = {
-      flights: []
-    }
+    this.state = {}
   }
 
   getFlights() {
-
     const now = new Date()
+    this.flights = []
 
     arrivals.forEach(flight => {
       console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`);
@@ -46,31 +43,22 @@ class FlightTable extends Component {
           candidates.push(newDateWithScheduledFlightTime(startOfTomorrow()))
         }
         
-        // 3. else, there should be no next flight to display
-        // 4. if previous weeekday is scheduled, make new date object from yesterday + flight time
+        // 3. if previous weeekday is scheduled, make new date object from yesterday + flight time
         if (flight['days'].includes(prevWeekday)) {
           candidates.push(newDateWithScheduledFlightTime(startOfYesterday()))
         }
         
         // then sort all flight times ascending into array
-        // TODO: might not be necessary to sort
-        // candidates.sort((a, b) => a.getTime() - b.getTime())
+        // TODO: Not really necessary to sort - can remove sorting to optimize performance
+        candidates.sort((a, b) => a.getTime() - b.getTime())
 
-        console.log('candidates is', candidates)
-
-        // for each flight time, if flight is within 4 hours of right now, return it
-        console.log('xxx is', candidates.find( (candidate, idx) => {
-          console.log(`minute diff between candidate ${idx} and now is`, differenceInMinutes(candidate, now));
-          return Math.abs(differenceInMinutes(candidate, now)) <= 240
-        }))
-
-        return candidates.find(candidate => Math.abs(differenceInMinutes(candidate, now)) <= 240)
+        return candidates.find(candidate => Math.abs(differenceInMinutes(candidate, now)) <= 180)
       }
 
       const displayableFlight = displayableFlightDate()
       if (displayableFlight) {
         const { id, orig_pretty, status } = flight
-        this.state.flights.push(
+        this.flights.push(
           Object.assign(
             {id, orig_pretty, status}, 
             {
@@ -78,26 +66,80 @@ class FlightTable extends Component {
               status: (() => {
                 if (differenceInMinutes(displayableFlight, now) <= 0) return 'Departed'
                 else return 'On time'
-              })()
+              })(),
+              gate: this.getGate(id)
             }
           )
         )
-
-        console.log('flights is', this.state.flights)
-        
       }
     })
 
+    console.log('this.gates is ', this.gates)
+    console.log('this.flights is ', this.flights)
+    this.cleanGates()
+
+    if (this.flights.length === 0) {
+      return this.noFlights()
+    }
+    else {
+      return (
+        <tbody>
+          {
+            this.flights.map((flight, idx) => (
+              <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} gate={flight.gate} />
+            ))
+          }
+        </tbody>
+      )
+    }
+  }
+
+  getGate(id) {
+    // If gate has already been assigned to flight, return it
+    if (this.gates.hasOwnProperty(id)) {
+      return this.gates[id]
+    // Else generate a random gate, assign to flight, return it
+    } else {
+      const letters = 'ABCDEF'
+      return this.gates[id] = '' + letters[Math.floor(Math.random() * letters.length)] + (Math.floor(Math.random() * 24) + 1)
+    }
+  }
+
+  // Clears gates that aren't assigned to flights - current departed flights still have gate assigned
+  cleanGates() {
+    Object.keys(this.gates).forEach((gate) => {
+      let found = this.flights.find((flight) => {
+        return flight.id === gate
+      })
+      if (!found) {
+        delete this.gates[gate]
+      }
+    })
+    // this.flights.forEach((flight) => {
+    //   if (!this.gates.hasOwnProperty(flight.id)) {
+    //     delete this.gates[flight.id]
+    //   }
+    // })
+  }
+
+  noFlights() {
     return (
       <tbody>
-      {this.state.flights.map((flight, idx) => (
-        <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} />
-      ))}
+        <tr>
+          <td colSpan="4">No flights to display</td>
+        </tr>
       </tbody>
-    ) 
+    )
   }
 
   componentDidMount() {
+    this.interval = setInterval(() => this.setState({
+      lastUpdated: Date.now()
+    }), 30000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   render() {
