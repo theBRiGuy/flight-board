@@ -6,7 +6,6 @@ import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
 import Flight from './Flight'
 import { getISODay, startOfTomorrow, startOfYesterday, differenceInMinutes } from 'date-fns'
-import arrivals from './arrivals'
 
 
 class FlightTable extends Component {
@@ -21,7 +20,7 @@ class FlightTable extends Component {
     const now = new Date()
     this.flights = []
 
-    arrivals.forEach(flight => {
+    this.flightData.forEach(flight => {
       console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`);
 
       const newDateWithScheduledFlightTime = (date) => {
@@ -139,6 +138,12 @@ class FlightTable extends Component {
   }
 
   componentDidMount() {
+    fetch('localhost:4000/arrivals')
+      .then(res => res.json())
+      .then((result) => {
+        this.flightData = result
+      })
+
     this.interval = setInterval(() => this.setState({
       lastUpdated: Date.now()
     }), 30000)
