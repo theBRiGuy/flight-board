@@ -25,7 +25,7 @@ class Time extends Component {
   }
 
   timeFactory() {
-    return format(new Date(), 'MMM D YYYY HH:mm:ss')
+    return format(new Date(), 'dddd MMM D - HH:mm')
   }
 }
 

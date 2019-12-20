@@ -7,6 +7,8 @@ import TableCell from '@material-ui/core/TableCell'
 import Flight from './Flight'
 import { getISODay, startOfTomorrow, startOfYesterday, differenceInMinutes } from 'date-fns'
 import arrivals from './arrivals'
+import statuses from './statuses'
+import './FlightTable.scss'
 
 
 class FlightTable extends Component {
@@ -63,17 +65,18 @@ class FlightTable extends Component {
 
       const displayableFlight = displayableFlightDate()
       if (displayableFlight) {
-        const { id, orig_pretty, status } = flight
+        const { id, carrier_pretty, orig_pretty, arr_term } = flight
         this.flights.push(
           Object.assign(
-            {id, orig_pretty, status}, 
+            {id, carrier_pretty, orig_pretty, arr_term }, 
             {
               time: `${('0' + displayableFlight.getHours()).slice(-2)}:${displayableFlight.getMinutes()}`,
               status: (() => {
-                if (differenceInMinutes(displayableFlight, now) <= 0) return 'Departed'
-                else return 'On time'
+                var diff = differenceInMinutes(displayableFlight, now)
+                if (diff <= 0) return statuses.arr.id
+                else return statuses.on_time.id
               })(),
-              gate: this.getGate(id)
+              gate: this.getGate(id, arr_term)
             }
           )
         )
@@ -92,7 +95,16 @@ class FlightTable extends Component {
         <TableBody>
           {
             this.flights.map((flight, idx) => (
-              <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} gate={flight.gate} />
+              <Flight
+                key={idx}
+                id={flight.id}
+                carrier_pretty={flight.carrier_pretty}
+                orig_pretty={flight.orig_pretty}
+                time={flight.time}
+                status={flight.status}
+                arr_term={flight.arr_term}
+                gate={flight.gate}
+              />
             ))
           }
         </TableBody>
@@ -100,13 +112,13 @@ class FlightTable extends Component {
     }
   }
 
-  getGate(id) {
+  getGate(id, arr_term) {
     // If gate has already been assigned to flight, return it
     if (this.gates.hasOwnProperty(id)) {
       return this.gates[id]
     // Else generate a random gate, assign to flight, return it
     } else {
-      const letters = 'ABCDEF'
+      const letters = ( arr_term === 'T3' ? 'ABC' : 'DEF' )
       return this.gates[id] = '' + letters[Math.floor(Math.random() * letters.length)] + (Math.floor(Math.random() * 24) + 1)
     }
   }
@@ -154,9 +166,11 @@ class FlightTable extends Component {
         <TableHead>
           <TableRow>
             <TableCell>Flight</TableCell>
+            <TableCell>Airline</TableCell>
             <TableCell>Origin</TableCell>
             <TableCell>Scheduled Time</TableCell>
             <TableCell>Status</TableCell>
+            <TableCell>Terminal</TableCell>
             <TableCell>Gate</TableCell>
           </TableRow>
         </TableHead>
