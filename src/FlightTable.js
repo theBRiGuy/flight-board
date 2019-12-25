@@ -20,6 +20,7 @@ class FlightTable extends Component {
     const now = new Date()
     this.flights = []
 
+    console.log(this.flightdata)
     this.flightData.forEach(flight => {
       console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`);
 
@@ -138,10 +139,14 @@ class FlightTable extends Component {
   }
 
   componentDidMount() {
-    fetch('localhost:4000/arrivals')
+    fetch('http://localhost:4000/arrivals')
       .then(res => res.json())
       .then((result) => {
+        console.log('result is', result)
         this.flightData = result
+      })
+      .catch((error) => {
+        console.log('error! error is', error)
       })
 
     this.interval = setInterval(() => this.setState({
