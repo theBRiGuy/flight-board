@@ -20,8 +20,7 @@ class FlightTable extends Component {
     const now = new Date()
     this.flights = []
 
-    console.log(this.flightdata)
-    this.flightData.forEach(flight => {
+    this.state.flightData.forEach(flight => {
       console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`);
 
       const newDateWithScheduledFlightTime = (date) => {
@@ -142,8 +141,7 @@ class FlightTable extends Component {
     fetch('http://localhost:4000/arrivals')
       .then(res => res.json())
       .then((result) => {
-        console.log('result is', result)
-        this.flightData = result
+        this.setState({flightData: result})
       })
       .catch((error) => {
         console.log('error! error is', error)
@@ -170,9 +168,7 @@ class FlightTable extends Component {
             <TableCell>Gate</TableCell>
           </TableRow>
         </TableHead>
-          {
-            this.getFlights()
-          }
+          { this.state.flightData && this.getFlights() }
       </Table>
     )
   }
