@@ -1,20 +1,18 @@
-import React, { Component } from 'react'
+import React from 'react'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
 
-class Flight extends Component {
+function Flight(props) {
 
-  render() {
-    return(
-      <TableRow>
-        <TableCell className="id">{this.props.id}</TableCell>
-        <TableCell className="origin">{this.props.orig_pretty}</TableCell>
-        <TableCell className="time">{this.props.time}</TableCell>
-        <TableCell className="status">{this.props.status}</TableCell>
-        <TableCell className="gate">{this.props.gate}</TableCell>
-      </TableRow>
-    )
-  }
+  return (
+    <TableRow>
+      <TableCell className="id">{props.id}</TableCell>
+      <TableCell className="origin">{props.orig_pretty}</TableCell>
+      <TableCell className="time">{props.time}</TableCell>
+      <TableCell className="status">{props.status}</TableCell>
+      <TableCell className="gate">{props.gate}</TableCell>
+    </TableRow>
+  )
 }
 
 export default Flight
