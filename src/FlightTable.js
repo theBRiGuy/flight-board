@@ -15,18 +15,14 @@ function FlightTable(props) {
   const [gates, setGates] = useState({})
 
   const getGate = id => {
-    console.log('gates is ', gates)
-    // If gate has already been assigned to flight, return it
-    if (gates.hasOwnProperty(id)) {
-      return gates[id];
-      // Else generate a random gate, assign to flight, return it
-    } else {
+    // If gate hasn't been assigned in gates object, generate a random gate, assign to flight, return it
+    if (!gates.hasOwnProperty(id)) {
       const letters = "ABCDEF";
       setGates({...gates, [id]: "" +
         letters[Math.floor(Math.random() * letters.length)] +
         (Math.floor(Math.random() * 24) + 1)});
-      return gates[id];
     }
+    return gates[id];
   }
 
   const noFlights = () => (
@@ -42,7 +38,7 @@ function FlightTable(props) {
     const flights = []
 
     flightData.forEach(flight => {
-      console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`)
+      // console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`)
 
       const newDateWithScheduledFlightTime = (date) => {
         const arrTimeArr = flight['arr_time'].split(':')
@@ -83,28 +79,23 @@ function FlightTable(props) {
 
       const displayableFlight = displayableFlightDate()
       if (displayableFlight) {
-        const { id, orig_pretty, status } = flight
-        flights.push(
-          Object.assign(
-            {id, orig_pretty, status}, 
-            {
-              time: `${('0' + displayableFlight.getHours()).slice(-2)}:${displayableFlight.getMinutes()}`,
-              status: (() => {
-                if (differenceInMinutes(displayableFlight, now) <= 0) return 'Departed'
-                else return 'On time'
-              })(),
-              gate: getGate(id)
-            }
-          )
-        )
+        const { id, orig_pretty } = flight
+        flights.push({
+          id,
+          orig_pretty,
+          time: `${('0' + displayableFlight.getHours()).slice(-2)}:${displayableFlight.getMinutes()}`,
+          status: (() => {
+            if (differenceInMinutes(displayableFlight, now) <= 0) return 'Departed'
+            else return 'On time'
+          })(),
+          gate: getGate(id)
+        })
       }
     })
 
     // Clears gates that aren't assigned to flights - current departed flights still have gate assigned
-    Object.keys(gates).forEach((gate) => {
-      let found = flights.find((flight) => {
-        return flight.id === gate
-      })
+    Object.keys(gates).forEach(gate => {
+      let found = flights.find(flight => flight.id === gate)
       if (!found) {
         delete gates[gate]
       }
@@ -150,7 +141,7 @@ function FlightTable(props) {
           <TableCell>Gate</TableCell>
         </TableRow>
       </TableHead>
-        { flightData && getFlights() }
+      { flightData && getFlights() }
     </Table>
   )
 }
