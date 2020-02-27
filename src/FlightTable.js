@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
+import useInterval from './helpers/useInterval'
 import Table from '@material-ui/core/Table'
 import TableHead from '@material-ui/core/TableHead'
 import TableBody from '@material-ui/core/TableBody'
@@ -7,21 +8,41 @@ import TableCell from '@material-ui/core/TableCell'
 import Flight from './Flight'
 import { getISODay, startOfTomorrow, startOfYesterday, differenceInMinutes } from 'date-fns'
 
+function FlightTable(props) {
 
-class FlightTable extends Component {
+  // state
+  const [flightData, setFlightData] = useState([])
+  const [gates, setGates] = useState({})
 
-  constructor (props) {
-    super(props)
-    this.gates = {}
-    this.state = {}
+  const getGate = id => {
+    console.log('gates is ', gates)
+    // If gate has already been assigned to flight, return it
+    if (gates.hasOwnProperty(id)) {
+      return gates[id];
+      // Else generate a random gate, assign to flight, return it
+    } else {
+      const letters = "ABCDEF";
+      setGates({...gates, [id]: "" +
+        letters[Math.floor(Math.random() * letters.length)] +
+        (Math.floor(Math.random() * 24) + 1)});
+      return gates[id];
+    }
   }
 
-  getFlights() {
-    const now = new Date()
-    this.flights = []
+  const noFlights = () => (
+    <TableBody>
+      <TableRow>
+        <TableCell colSpan="5">No flights to display</TableCell>
+      </TableRow>
+    </TableBody>
+  )
 
-    this.state.flightData.forEach(flight => {
-      console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`);
+  const getFlights = () => {
+    const now = new Date()
+    const flights = []
+
+    flightData.forEach(flight => {
+      console.log(`Flight ${flight['id']}, time: ${flight['arr_time']}, days: ${flight['days']} (current day is ${getISODay(now)})`)
 
       const newDateWithScheduledFlightTime = (date) => {
         const arrTimeArr = flight['arr_time'].split(':')
@@ -63,7 +84,7 @@ class FlightTable extends Component {
       const displayableFlight = displayableFlightDate()
       if (displayableFlight) {
         const { id, orig_pretty, status } = flight
-        this.flights.push(
+        flights.push(
           Object.assign(
             {id, orig_pretty, status}, 
             {
@@ -72,106 +93,66 @@ class FlightTable extends Component {
                 if (differenceInMinutes(displayableFlight, now) <= 0) return 'Departed'
                 else return 'On time'
               })(),
-              gate: this.getGate(id)
+              gate: getGate(id)
             }
           )
         )
       }
     })
 
-    console.log('this.gates is ', this.gates)
-    console.log('this.flights is ', this.flights)
-    this.cleanGates()
-
-    if (this.flights.length === 0) {
-      return this.noFlights()
-    }
-    else {
-      return (
-        <TableBody>
-          {
-            this.flights.map((flight, idx) => (
-              <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} gate={flight.gate} />
-            ))
-          }
-        </TableBody>
-      )
-    }
-  }
-
-  getGate(id) {
-    // If gate has already been assigned to flight, return it
-    if (this.gates.hasOwnProperty(id)) {
-      return this.gates[id]
-    // Else generate a random gate, assign to flight, return it
-    } else {
-      const letters = 'ABCDEF'
-      return this.gates[id] = '' + letters[Math.floor(Math.random() * letters.length)] + (Math.floor(Math.random() * 24) + 1)
-    }
-  }
-
-  // Clears gates that aren't assigned to flights - current departed flights still have gate assigned
-  cleanGates() {
-    Object.keys(this.gates).forEach((gate) => {
-      let found = this.flights.find((flight) => {
+    // Clears gates that aren't assigned to flights - current departed flights still have gate assigned
+    Object.keys(gates).forEach((gate) => {
+      let found = flights.find((flight) => {
         return flight.id === gate
       })
       if (!found) {
-        delete this.gates[gate]
+        delete gates[gate]
       }
     })
-    // this.flights.forEach((flight) => {
-    //   if (!this.gates.hasOwnProperty(flight.id)) {
-    //     delete this.gates[flight.id]
-    //   }
-    // })
-  }
 
-  noFlights() {
     return (
+      <>
+      { !flights.length && noFlights() }
       <TableBody>
-        <TableRow>
-          <TableCell colSpan="4">No flights to display</TableCell>
-        </TableRow>
+        {
+          flights.map((flight, idx) => (
+            <Flight key={idx} id={flight.id} orig_pretty={flight.orig_pretty} time={flight.time} status={flight.status} gate={flight.gate} />
+          ))
+        }
       </TableBody>
+      </>
     )
   }
 
-  componentDidMount() {
-    fetch('http://localhost:4000/arrivals')
+  const fetchFlights = () => {
+    fetch("http://localhost:4000/arrivals")
       .then(res => res.json())
-      .then((result) => {
-        this.setState({flightData: result})
+      .then(result => {
+        setFlightData(result);
       })
-      .catch((error) => {
-        console.log('error! error is', error)
+      .catch(error => {
+        console.log("error! error is", error);
       })
-
-    this.interval = setInterval(() => this.setState({
-      lastUpdated: Date.now()
-    }), 30000)
   }
 
-  componentWillUnmount() {
-    clearInterval(this.interval);
-  }
+  useInterval(() => {
+    fetchFlights()
+  }, 5000)
 
-  render() {
-    return(
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Flight</TableCell>
-            <TableCell>Origin</TableCell>
-            <TableCell>Scheduled Time</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Gate</TableCell>
-          </TableRow>
-        </TableHead>
-          { this.state.flightData && this.getFlights() }
-      </Table>
-    )
-  }
+  return (
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell>Flight</TableCell>
+          <TableCell>Origin</TableCell>
+          <TableCell>Scheduled Time</TableCell>
+          <TableCell>Status</TableCell>
+          <TableCell>Gate</TableCell>
+        </TableRow>
+      </TableHead>
+        { flightData && getFlights() }
+    </Table>
+  )
 }
 
 export default FlightTable
