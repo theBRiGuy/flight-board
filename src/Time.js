@@ -1,32 +1,23 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import { format } from 'date-fns'
+import useInterval from './helpers/useInterval'
 
-class Time extends Component {
+function Time(props) {
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      curTime: this.timeFactory()
-    }
-  }
-
-  render() {
-    return (
-      <div className="Time">{this.state.curTime}</div>
-    )
-  }
-
-  componentDidMount() {
-    setInterval(() => {
-      this.setState({
-        curTime: this.timeFactory()
-      })
-    }, 1000)
-  }
-
-  timeFactory() {
+  const timeFactory = () => {
     return format(new Date(), 'MMM D YYYY HH:mm:ss')
   }
+
+  // state
+  const [curTime, setCurTime] = useState(timeFactory())
+
+  useInterval(() => {
+    setCurTime(timeFactory());
+  }, 1000)
+
+  return (
+    <div className="Time">{curTime}</div>
+  )
 }
 
 export default Time
